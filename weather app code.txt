@@ -1,0 +1,32 @@
+var stringLocation=location+" ";
+var arrayLocations=stringLocation.split(",");
+var lat=arrayLocations[0];
+var long=arrayLocations[1];
+var params = {
+url: "http://api.openweathermap.org/data/2.5/forecast?lat="+lat+"&lon="+long+"&units=metric&type=accurate&mode=xml&APPID=4abc8a3c9f101ccf9c7cfe7cbf3dfed7" /* STRING */,
+timeout: 160 /* NUMBER */
+};
+// result: XML
+var xmlPage = Resources["ContentLoaderFunctions"].LoadXML(params);
+var params = {
+infoTableName : "InfoTable",
+dataShapeName : "OpenWeatherFeed"
+};
+var result = Resources["InfoTableFunctions"].CreateInfoTableFromDataShape(params);
+var from_today_value=xmlPage.forecast.time[0].@from.substring(0,10);
+logger.warn("from_today_value= "+from_today_value);
+for each (var item in xmlPage.forecast.time) {
+var row = new Object();
+var from_current_value=item.@from.substring(0,10);
+row.WindDirection = item.windDirection.@name;
+row.WindSpeed=item.windSpeed.@mps;
+row.WeatherTemp=parseInt(item.temperature.@value);
+row.WeatherHumidity=parseFloat(item.humidity.@value);
+row.From =  item.@from;
+row.To =  item.@to;
+row.Title=xmlPage.location.name+" "+xmlPage.location.country;
+row.Precipitation=(item.precipitation.@type+" "+item.precipitation.@value)==" "?"NoPrecipitation":item.precipitation.@type;
+result.AddRow(row);
+}
+
+
